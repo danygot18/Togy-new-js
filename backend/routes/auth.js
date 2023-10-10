@@ -8,6 +8,6 @@ router.post('/login', loginUser);
 router.get('/logout',logout);
 
 router.post('/password/forgot',forgotPassword);
-router.put('/password/reset/:token',resetPassword);
+// router.put('/password/reset/:token',resetPassword);
 
 module.exports = router;

@@ -1,5 +1,6 @@
-const User = require('../models/users');
+const User = require('../models/user');
 const sendToken = require('../utils/jwtToken');
+const sendEmail = require('../utils/sendEmail');
 
 exports.registerUser = async (req, res, next) => {
     const { name, email, password, role } = req.body;
