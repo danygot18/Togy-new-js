@@ -1,29 +1,36 @@
 const User = require('../models/user');
 const sendToken = require('../utils/jwtToken');
-const sendEmail = require('../utils/sendEmail');
-const crypto = require('crypto')
-
+const cloudinary = require('cloudinary')
 exports.registerUser = async (req, res, next) => {
+    const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
+        folder: 'avatars',
+        width: 150,
+        crop: "scale"
+    }, (err, res) => {
+        console.log(err, res);
+    });
     const { name, email, password, role } = req.body;
     const user = await User.create({
         name,
         email,
         password,
         avatar: {
-            public_id: 'avatars/hsdfl66pg2mpvp5irfqy',
-            url: 'https://res.cloudinary.com/dgneiaky7/image/upload/v1680144230/avatars/hsdfl66pg2mpvp5irfqy.jpg'
+            public_id: result.public_id,
+            url: result.secure_url
         },
-        role,
-    })
-    //test token
-    const token = user.getJwtToken();
 
-    res.status(201).json({
-        success: true,
-        user,
-        token
+        // role,
     })
-    // sendToken(user, 200, res)
+
+    // const token = user.getJwtToken();
+    if (!user) {
+        return res.status(500).json({
+            success: false,
+            message: 'user not created'
+        })
+    }
+    sendToken(user, 200, res)
+
 }
 
 exports.loginUser = async (req, res, next) => {
@@ -78,7 +85,6 @@ exports.logout = async (req, res, next) => {
     })
 }
 
-
 exports.forgotPassword = async (req, res, next) => {
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
@@ -89,7 +95,7 @@ exports.forgotPassword = async (req, res, next) => {
     const resetToken = user.getResetPasswordToken();
     await user.save({ validateBeforeSave: false });
     // Create reset password url
-    const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/password/reset/${resetToken}`;
+    const resetUrl = `${req.protocol}://${req.get('host')}/password/reset/${resetToken}`;
     const message = `Your password reset token is as follow:\n\n${resetUrl}\n\nIf you have not requested this email, then ignore it.`
     try {
         await sendEmail({
@@ -149,12 +155,10 @@ exports.getUserProfile = async (req, res, next) => {
 
 exports.updatePassword = async (req, res, next) => {
     const user = await User.findById(req.user.id).select('password');
-
     // Check previous user password
     const isMatched = await user.comparePassword(req.body.oldPassword)
     if (!isMatched) {
         return res.status(400).json({ message: 'Old password is incorrect' })
-        
     }
     user.password = req.body.password;
     await user.save();
@@ -193,14 +197,12 @@ exports.updateProfile = async (req, res, next) => {
     })
 
     res.status(200).json({
-        success: true,
-        user
+        success: true
     })
 }
 
 exports.allUsers = async (req, res, next) => {
     const users = await User.find();
-
     res.status(200).json({
         success: true,
         users
