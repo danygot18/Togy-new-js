@@ -36,8 +36,12 @@ const Header = () => {
         <Fragment>
             <nav className="navbar row">
                 <div className="col-12 col-md-3">
-                    <div className="navbar-brand">
-                        <img src="./images/shopit_logo.png" />
+                    <div className="navbar-brand">  
+                                      
+                        <Link to="/">
+                            <img src="./images/shopit_logo.png" />
+                        </Link>
+                        
                     </div>
                 </div>
                 <div className="col-12 col-md-6 mt-2 mt-md-0">
