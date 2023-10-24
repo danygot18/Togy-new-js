@@ -1,4 +1,4 @@
-import React, { Fragment,  useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Carousel } from 'react-bootstrap'
 
@@ -10,35 +10,55 @@ import axios from 'axios'
 
 
 
-const ProductDetails = ({ match }) => { 
+const ProductDetails = ({ addItemToCart, cartItems }) => {
 
     const [loading, setLoading] = useState(true)
     const [product, setProduct] = useState({})
     const [error, setError] = useState('')
+    const [quantity, setQuantity] = useState(0)
 
 
     let { id } = useParams()
-	// const alert = useAlert();
+    // const alert = useAlert();
 
     const productDetails = async (id) => {
         let link = `http://localhost:4001/api/v1/product/${id}`
         console.log(link)
         let res = await axios.get(link)
         console.log(res)
+        if (!res)
+            setError('Product not found')
         setProduct(res.data.product)
         setLoading(false)
     }
 
+    const increaseQty = () => {
+        const count = document.querySelector('.count')
+        if (count.valueAsNumber >= product.stock) return;
+        const qty = count.valueAsNumber + 1;
+        setQuantity(qty)
+    }
+
+    const decreaseQty = () => {
+        const count = document.querySelector('.count')
+        if (count.valueAsNumber <= 1) return;
+        const qty = count.valueAsNumber - 1;
+        setQuantity(qty)
+    }
+    const addToCart =  async () => {
+        await addItemToCart(id, quantity);
+    }
+
     useEffect(() => {
         productDetails(id)
-
         // if (error) {
         //     alert.error(error);
-
         // }
-    }, [id]);
+    }, [id,]);
 
-     return (
+    localStorage.setItem('cartItems', JSON.stringify(cartItems))
+
+    return (
         <Fragment>
             {loading ? <Loader /> : (
                 <Fragment>
@@ -69,13 +89,13 @@ const ProductDetails = ({ match }) => {
 
                             <p id="product_price">${product.price}</p>
                             <div className="stockCounter d-inline">
-                                <span className="btn btn-danger minus" >-</span>
+                                <span className="btn btn-danger minus" onClick={decreaseQty} >-</span>
 
-                                {/* <input type="number" className="form-control count d-inline" value={quantity} readOnly /> */}
-                                <span className="btn btn-primary plus"> +</span>
-                                {/* <span className="btn btn-primary plus" onClick={increaseQty}+</span> */}
+                                <input type="number" className="form-control count d-inline" value={quantity} readOnly />
+                                {/* <span className="btn btn-primary plus"> +</span> */}
+                                <span className="btn btn-primary plus" onClick={increaseQty}>+</span>
                             </div>
-                            <button type="button" id="cart_btn" className="btn btn-primary d-inline ml-4"  >Add to Cart</button>
+                            <button type="button" id="cart_btn" className="btn btn-primary d-inline ml-4" disabled={product.stock === 0} onClick={addToCart}>Add to Cart</button>
 
                             <hr />
 
@@ -92,7 +112,10 @@ const ProductDetails = ({ match }) => {
                                 Submit Your Review
                             </button> 
                                 :*/}
-                                <div className="alert alert-danger mt-5" type='alert'>Login to post your review.</div>
+                            <button id="review_btn" type="button" className="btn btn-primary mt-4" data-toggle="modal" data-target="#ratingModal" >
+                                Submit Your Review
+                            </button>
+                            <div className="alert alert-danger mt-5" type='alert'>Login to post your review.</div>
                             {/* } */}
 
 
@@ -121,11 +144,11 @@ const ProductDetails = ({ match }) => {
                                                     <textarea
                                                         name="review"
                                                         id="review" className="form-control mt-3"
-                                                        >
+                                                    >
 
                                                     </textarea>
 
-                                                    <button className="btn my-3 float-right review-btn px-4 text-white"  data-dismiss="modal" aria-label="Close">Submit</button>
+                                                    <button className="btn my-3 float-right review-btn px-4 text-white" data-dismiss="modal" aria-label="Close">Submit</button>
                                                 </div>
                                             </div>
                                         </div>
