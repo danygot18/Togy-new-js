@@ -33,7 +33,6 @@ class APIFeatures {
         return this;
     }
 
-    // http://localhost:4001/api/v1/products?keywords=?&page=?
     // http://localhost:4001/api/v1/products?page=?
     pagination(resPerPage) {
         const currentPage = Number(this.queryStr.page) || 1;
