@@ -24,6 +24,13 @@ import OrderDetails from './Components/Order/OrderDetails';
 import Dashboard from './Components/Admin/Dashboard';
 import NewProduct from './Components/Admin/NewProduct';
 import ProductsList from './Components/Admin/ProductsList';
+import UpdateProduct from './Components/Admin/UpdateProduct';
+import OrdersList from './Components/Admin/OrdersList';
+import ProcessOrder from './Components/Admin/ProcessOrder';
+import UsersList from './Components/Admin/UsersList';
+import UpdateUser from './Components/Admin/UpdateUser';
+import ProtectedRoute from './Components/Route/ProtectedRoute';
+
 
 function App() {
   const [state, setState] = useState({
@@ -118,15 +125,44 @@ function App() {
             saveShippingInfo={saveShippingInfo}
           />}
           />
-          <Route path="/confirm" element={<ConfirmOrder cartItems={state.cartItems} shippingInfo={state.shippingInfo} />}  />
-          <Route path="/payment" element={<Payment cartItems={state.cartItems} shippingInfo={state.shippingInfo} />}  />
-          <Route path="/success" element={<OrderSuccess />}  />
-          <Route path="/orders/me" element={<ListOrders />}  />
-          <Route path="/order/:id" element={<OrderDetails />}  />
+          <Route path="/confirm" element={<ConfirmOrder cartItems={state.cartItems} shippingInfo={state.shippingInfo} />} />
+          <Route path="/payment" element={<Payment cartItems={state.cartItems} shippingInfo={state.shippingInfo} />} />
+          <Route path="/success" element={<OrderSuccess />} />
+          <Route path="/orders/me" element={<ListOrders />} />
+          <Route path="/order/:id" element={<OrderDetails />} />
 
-          <Route path="/dashboard" element={<Dashboard />}  />
-          <Route path="/admin/product" element={<NewProduct  />}  />
-          <Route path="/admin/products" element={<ProductsList />}  />
+          {/* <Route path="/dashboard" element={<Dashboard />}  /> */}
+          <Route path="/admin/product" element={<NewProduct />} />
+         
+          <Route
+            path="/admin/product/:id"
+            element={<UpdateProduct />} />
+          <Route
+            path="/admin/orders"
+            element={<OrdersList />} />
+          <Route
+            path="/admin/order/:id"
+            element={<ProcessOrder />} />
+          <Route
+            path="/admin/users"
+            element={<UsersList />} />
+          <Route path="/admin/user/:id" element={<UpdateUser />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute isAdmin={true}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={
+              <ProtectedRoute isAdmin={true}>
+                <ProductsList />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
         <Footer />
       </Router>
