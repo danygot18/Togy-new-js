@@ -9,44 +9,53 @@ import { getToken } from '../../utils/helpers';
 import axios from 'axios'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useDispatch, useSelector } from 'react-redux'
+import {
+    getAdminProducts,
+    clearErrors,
+} from '../../actions/productActions'
 
 const ProductsList = () => {
-    const [products, setProducts] = useState([])
-    const [error, setError] = useState('')
+    const dispatch = useDispatch();
+    const { loading, error, products } = useSelector(state => state.products)
+    // const [products, setProducts] = useState([])
+    // const [error, setError] = useState('')
     const [deleteError, setDeleteError] = useState('')
     const [users, setUsers] = useState([])
     const [orders, setOrders] = useState([])
-    const [loading, setLoading] = useState(true)
+    // const [loading, setLoading] = useState(true)
     const [isDeleted, setIsDeleted] = useState(false)
 
     let navigate = useNavigate()
-    const getAdminProducts = async () => {
-        try {
+    // const getAdminProducts = async () => {
+    //     try {
 
-            const config = {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${getToken()}`
-                }
-            }
+    //         const config = {
+    //             headers: {
+    //                 'Content-Type': 'multipart/form-data',
+    //                 'Authorization': `Bearer ${getToken()}`
+    //             }
+    //         }
 
-            const { data } = await axios.get(`http://localhost:4001/api/v1/admin/products`, config)
-            console.log(data)
-            setProducts(data.products)
-            setLoading(false)
-        } catch (error) {
+    //         const { data } = await axios.get(`http://localhost:4001/api/v1/admin/products`, config)
+    //         console.log(data)
+    //         setProducts(data.products)
+    //         setLoading(false)
+    //     } catch (error) {
 
-            setError(error.response.data.message)
+    //         setError(error.response.data.message)
 
-        }
-    }
+    //     }
+    // }
     useEffect(() => {
-        getAdminProducts()
+        // getAdminProducts()
+        dispatch(getAdminProducts())
 
         if (error) {
             toast.error(error, {
                 position: toast.POSITION.BOTTOM_RIGHT
             });
+            dispatch(clearErrors())
         }
 
         if (deleteError) {
@@ -76,7 +85,7 @@ const ProductsList = () => {
             const { data } = await axios.delete(`http://localhost:4001/api/v1/admin/product/${id}`, config)
 
             setIsDeleted(data.success)
-            setLoading(false)
+            // setLoading(false)
         } catch (error) {
             setDeleteError(error.response.data.message)
 
