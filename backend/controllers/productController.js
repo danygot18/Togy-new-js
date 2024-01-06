@@ -1,5 +1,6 @@
 const Product = require('../models/product')
 const APIFeatures = require('../utils/apiFeatures');
+const Order = require('../models/order')
 
 exports.newProduct = async (req, res, next) => {
 	
@@ -208,11 +209,12 @@ exports.createProductReview = async (req, res, next) => {
 	}
 	const product = await Product.findById(productId);
 	const isReviewed = product.reviews.find(
-		r => r.user.toString() === req.user._id.toString()
+		r => r.user && (r.user.toString() === req.user._id.toString())
 	)
 	if (isReviewed) {
 		product.reviews.forEach(review => {
-			if (review.user.toString() === req.user._id.toString()) {
+			console.log(review)
+			if (review.user && (review.user.toString() === req.user._id.toString())) {
 				review.comment = comment;
 				review.rating = rating;
 			}
@@ -239,4 +241,83 @@ exports.getProductReviews = async (req, res, next) => {
         success: true,
         reviews: product.reviews
     })
+}
+exports.deleteReview = async (req, res, next) => {
+    const product = await Product.findById(req.query.productId);
+    const reviews = product.reviews.filter(review => review && (review._id.toString() !== req.query.id.toString()));
+    const numOfReviews = reviews.length;
+
+    const ratings = product.reviews.reduce((acc, item) => item.rating + acc, 0) / reviews.length
+
+    await Product.findByIdAndUpdate(req.query.productId, {
+        reviews,
+        ratings,
+        numOfReviews
+    }, {
+        new: true,
+        runValidators: true,
+        useFindAndModify: false
+    })
+
+    return res.status(200).json({
+        success: true
+    })
+
+}
+
+exports.productSales = async (req, res, next) => {
+    const totalSales = await Order.aggregate([
+        {
+            $group: {
+                _id: null,
+                total: { $sum: "$itemsPrice" }
+
+            },
+
+        },
+    ])
+    console.log(totalSales)
+    const sales = await Order.aggregate([
+        { $project: { _id: 0, "orderItems": 1, totalPrice: 1 } },
+        { $unwind: "$orderItems" },
+        {
+            $group: {
+                _id: { product: "$orderItems.name" },
+                total: { $sum: { $multiply: ["$orderItems.price", "$orderItems.quantity"] } }
+            },
+        },
+    ])
+	// return console.log(sales)
+	console.log("sales", sales)
+    if (!totalSales) {
+		return res.status(404).json({
+			message: 'error sales'
+		})
+
+    }
+    if (!sales) {
+		return res.status(404).json({
+			message: 'error sales'
+		})
+
+    }
+
+    let totalPercentage = {}
+    totalPercentage = sales.map(item => {
+
+        // console.log( ((item.total/totalSales[0].total) * 100).toFixed(2))
+        percent = Number (((item.total/totalSales[0].total) * 100).toFixed(2))
+        total =  {
+            name: item._id.product,
+            percent
+        }
+        return total
+    }) 
+    // return console.log(totalPercentage)
+    res.status(200).json({
+        success: true,
+        totalPercentage,
+        sales,
+        totalSales
+    })	
 }

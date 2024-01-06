@@ -10,6 +10,9 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import Header from './Layout/Header';
 
+import { useDispatch, useSelector } from 'react-redux'
+import { getProducts } from '../actions/productActions'
+
 
 const categories = [
     'Electronics',
@@ -26,13 +29,17 @@ const categories = [
     'Home'
 ]
 const Home = () => {
-    const [loading, setLoading] = useState(true)
-    const [products, setProducts] = useState([])
-    const [error, setError] = useState()
-    const [productsCount, setProductsCount] = useState(0)
+    // const [loading, setLoading] = useState(true)
+    // const [products, setProducts] = useState([])
+    // const [error, setError] = useState()
+    // const [productsCount, setProductsCount] = useState(0)
+
+    // const [resPerPage, setResPerPage] = useState(0)
+    // const [filteredProductsCount, setFilteredProductsCount] = useState(0)
+    const dispatch = useDispatch();
+    const {loading, products, error, productsCount, resPerPage, filteredProductsCount } = useSelector(state => state.products);
+
     const [currentPage, setCurrentPage] = useState(1);
-    const [resPerPage, setResPerPage] = useState(0)
-    const [filteredProductsCount, setFilteredProductsCount] = useState(0)
     const [price, setPrice] = useState([1, 1000]);
     const [category, setCategory] = useState('');
     let { keyword } = useParams();
@@ -40,22 +47,23 @@ const Home = () => {
     const createSliderWithTooltip = Slider.createSliderWithTooltip;
     const Range = createSliderWithTooltip(Slider.Range);
 
-    const getProducts = async (currentPage = 1, keyword = '', price, category = '') => {
-        let link = `http://localhost:4001/api/v1/products?page=${currentPage}&keyword=${keyword}&price[lte]=${price[1]}&price[gte]=${price[0]}`
+    // const getProducts = async (currentPage = 1, keyword = '', price, category = '') => {
+    //     let link = `http://localhost:4001/api/v1/products?page=${currentPage}&keyword=${keyword}&price[lte]=${price[1]}&price[gte]=${price[0]}`
 
-        if (category) {
-            link = `http://localhost:4001/api/v1/products?keyword=${keyword}&page=${currentPage}&price[lte]=${price[1]}&price[gte]=${price[0]}&category=${category}`
-        }
-        console.log(link)
-        let res = await axios.get(link)
-        console.log(res)
-        setProducts(res.data.products)
-        setResPerPage(res.data.resPerPage)
-        setProductsCount(res.data.productsCount)
-        setFilteredProductsCount(res.data.filteredProductsCount)
-        setLoading(false)
+    //     if (category) {
+    //         link = `http://localhost:4001/api/v1/products?keyword=${keyword}&page=${currentPage}&price[lte]=${price[1]}&price[gte]=${price[0]}&category=${category}`
+    //     }
+    //     console.log(link)
+    //     let res = await axios.get(link)
+    //     console.log(res)
+    //     setProducts(res.data.products)
+    //     setResPerPage(res.data.resPerPage)
+    //     setProductsCount(res.data.productsCount)
+    //     setFilteredProductsCount(res.data.filteredProductsCount)
+    //     setLoading(false)
 
-    }
+    // }
+
     let count = productsCount;
 
     if (keyword) {
@@ -67,24 +75,30 @@ const Home = () => {
 
     const loadUser = async () => {
         try {
-            
+
             const { data } = await axios.get('/api/v1/me')
-    
+
         } catch (error) {
-            console.log( error.response.data.message)
-            
+            console.log(error.response.data.message)
+
         }
     }
 
     useEffect(() => {
-        getProducts(currentPage, keyword, price, category)
-    }, [currentPage, keyword, price, category])
-    // console.log(products)
+        //     getProducts(currentPage, keyword, price, category)
+        // }, [currentPage, keyword, price, category])
+        // console.log(products)
+        if (error) {
+            // return alert.error(error)
+            console.log(error)
+        }
+        dispatch(getProducts(currentPage, keyword, price, category))
+    }, [dispatch, error, currentPage, keyword, price, category]);
     return (
         <>
             {loading ? <Loader /> : (<Fragment>
                 <MetaData title={'Buy Best Products Online'} />
-                
+
                 <div className="container container-fluid">
 
                     <h1 id="products_heading">Latest Products</h1>
