@@ -12,8 +12,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useDispatch, useSelector } from 'react-redux'
 import {
     getAdminProducts,
+    deleteProduct,
+    updateProduct,
     clearErrors,
 } from '../../actions/productActions'
+import { DELETE_PRODUCT_RESET } from '../../constants/productConstants'
 
 const ProductsList = () => {
     const dispatch = useDispatch();
@@ -65,6 +68,7 @@ const ProductsList = () => {
         }
 
         if (isDeleted) {
+            dispatch({ type: DELETE_PRODUCT_RESET })
             toast.success('Product deleted successfully', {
                 position: toast.POSITION.BOTTOM_RIGHT
             })
@@ -72,25 +76,25 @@ const ProductsList = () => {
 
         }
 
-    }, [error, deleteError, isDeleted,])
+    }, [error, deleteError, isDeleted, dispatch, navigate])
 
-    const deleteProduct = async (id) => {
-        try {
-            const config = {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${getToken()}`
-                }
-            }
-            const { data } = await axios.delete(`http://localhost:4001/api/v1/admin/product/${id}`, config)
+    // const deleteProduct = async (id) => {
+    //     try {
+    //         const config = {
+    //             headers: {
+    //                 'Content-Type': 'multipart/form-data',
+    //                 'Authorization': `Bearer ${getToken()}`
+    //             }
+    //         }
+    //         const { data } = await axios.delete(`http://localhost:4001/api/v1/admin/product/${id}`, config)
 
-            setIsDeleted(data.success)
-            // setLoading(false)
-        } catch (error) {
-            setDeleteError(error.response.data.message)
+    //         setIsDeleted(data.success)
+    //         // setLoading(false)
+    //     } catch (error) {
+    //         setDeleteError(error.response.data.message)
 
-        }
-    }
+    //     }
+    // }
 
 
 
@@ -146,7 +150,7 @@ const ProductsList = () => {
     }
 
     const deleteProductHandler = (id) => {
-        deleteProduct(id)
+        dispatch(deleteProduct(id))
     }
 
     return (
