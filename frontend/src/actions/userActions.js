@@ -43,6 +43,10 @@ import {  useNavigate, } from 'react-router-dom'
 
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { getToken, } from '../utils/helpers'
+import { authenticate } from '../utils/helpers'
+import {  useNavigate, } from 'react-router-dom'
+
 export const register = (userData) => async (dispatch) => {
     try {
         dispatch({ type: REGISTER_USER_REQUEST })
@@ -73,18 +77,18 @@ export const login = (email, password) => async (dispatch) => {
         const config = {
             headers: {
                 'Content-Type': 'application/json',
-                // 'Authorization': `Bearer ${getToken()}`
-            }
+            },
+            withCredentials: true,
         }
 
         const { data } = await axios.post(`${process.env.REACT_APP_API}/api/v1/login`, { email, password }, config)
         dispatch({
             type: LOGIN_SUCCESS,
-            payload: data.user
+            payload: data
         })
     } catch (error) {
         console.log(error.response)
-        notify(error)
+
         dispatch({
             type: LOGIN_FAIL,
             payload: error.response.data.message
