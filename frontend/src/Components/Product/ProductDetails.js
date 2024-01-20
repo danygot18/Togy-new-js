@@ -8,35 +8,36 @@ import { getUser, getToken, successMsg, errMsg } from '../../utils/helpers'
 import ListReviews from '../Review/ListReviews'
 // import { useAlert} from '@blaumaus/react-alert'
 import axios from 'axios'
+import { useDispatch, useSelector } from 'react-redux'
+import { getProductDetails, clearErrors } from '../../actions/productActions'
+import { addItemToCart } from '../../actions/cartActions'
 
 
-
-const ProductDetails = ({ addItemToCart, cartItems }) => {
-
-    const [loading, setLoading] = useState(true)
-    const [product, setProduct] = useState({})
-    const [error, setError] = useState('')
+const ProductDetails = () => {
+    const dispatch = useDispatch();
+    const { loading, error, product } = useSelector(state => state.productDetails);
+    // const [loading, setLoading] = useState(true)
+    // const [product, setProduct] = useState({})
+    // const [error, setError] = useState('')
     const [quantity, setQuantity] = useState(0)
     const [user, setUser] = useState(getUser())
     const [rating, setRating] = useState(0)
     const [comment, setComment] = useState('')
     const [errorReview, setErrorReview] = useState('');
     const [success, setSuccess] = useState('')
-
-
     let { id } = useParams()
     // const alert = useAlert();
 
-    const productDetails = async (id) => {
-        let link = `http://localhost:4001/api/v1/product/${id}`
-        console.log(link)
-        let res = await axios.get(link)
-        console.log(res)
-        if (!res)
-            setError('Product not found')
-        setProduct(res.data.product)
-        setLoading(false)
-    }
+    // const productDetails = async (id) => {
+    //     let link = `http://localhost:4001/api/v1/product/${id}`
+    //     console.log(link)
+    //     let res = await axios.get(link)
+    //     console.log(res)
+    //     if (!res)
+    //         setError('Product not found')
+    //     setProduct(res.data.product)
+    //     setLoading(false)
+    // }
 
     const increaseQty = () => {
         const count = document.querySelector('.count')
@@ -51,8 +52,13 @@ const ProductDetails = ({ addItemToCart, cartItems }) => {
         const qty = count.valueAsNumber - 1;
         setQuantity(qty)
     }
-    const addToCart = async () => {
-        await addItemToCart(id, quantity);
+    // const addToCart = async () => {
+    //     await addItemToCart(id, quantity);
+    // }
+
+    const addToCart = () => {
+        dispatch(addItemToCart(id, quantity));
+        successMsg('Item Added to Cart')
     }
     function setUserRatings() {
         const stars = document.querySelectorAll('.star');
@@ -95,7 +101,7 @@ const ProductDetails = ({ addItemToCart, cartItems }) => {
                 }
             }
 
-            const { data } = await axios.put(`http://localhost:4001/api/v1/review`, reviewData, config)
+            const { data } = await axios.put(`${process.env.REACT_APP_API}/api/v1/review`, reviewData, config)
             setSuccess(data.success)
 
         } catch (error) {
@@ -113,19 +119,23 @@ const ProductDetails = ({ addItemToCart, cartItems }) => {
     }
 
     useEffect(() => {
-        productDetails(id)
+        dispatch(getProductDetails(id))
+        if (error) {
+            errMsg(error);
+            dispatch(clearErrors())
+        }
         if (errorReview) {
             errMsg(errorReview)
             setErrorReview('')
         }
         if (success) {
-            successMsg('Reivew posted successfully')
+            successMsg('Review posted successfully')
             setSuccess(false)
 
         }
-    }, [id,]);
+    }, [id, error, errorReview, success, dispatch,]);
 
-    localStorage.setItem('cartItems', JSON.stringify(cartItems))
+    // localStorage.setItem('cartItems', JSON.stringify(cartItems))
 
     return (
         <Fragment>
